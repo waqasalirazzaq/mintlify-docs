@@ -60,5 +60,6 @@
     "auth": {
         "method": "bearer"
     }
-}
+},
+"openapi": "/api-reference/authentication.yaml"
 }
