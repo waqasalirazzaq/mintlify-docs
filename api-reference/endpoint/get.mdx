@@ -2,99 +2,231 @@
 title: "Get users"
 openapi: "GET /users"
 ---
-
-### Body
-
-<ParamField body="name" type="string">
-  This is the name of the user group.
-</ParamField>
-
-<ParamField body="user_group_id" type="string">
-  This is the ID you use to identify this user group in your database.
-</ParamField>
-
-<ParamField body="mapping" type="object">
-  This is a JSON mapping of schema id to either the data source that this user group should be
-  associated with or id of the datasource you provided when creating it.
-</ParamField>
-
-<ParamField body="properties" type="object">
-  This is a JSON object for properties assigned to this user group. These will be accessible through
-  variables in the dashboards and SQL editor
-</ParamField>
-
-### Response
-
-<ResponseField name="success" type="number">
-  Indicates whether the call was successful. 1 if successful, 0 if not.
-</ResponseField>
-
-<ResponseField name="new_user_group" type="boolean">
-  Indicates whether a new user group was created.
-</ResponseField>
-
-<ResponseField name="user_group" type="object">
-
-The contents of the user group
-
-<Expandable title="Toggle object">
-
-<ResponseField name="team_id" type="number">
-  This is the internal ID for this user group. You don't need to record this information, since
-  you will not need to use it.
-</ResponseField>
-
-<ResponseField name="token" type="string">
-  This is the user group token (userGroupToken or USER_GROUP_TOKEN) that will be used to identify
-  which user group is viewing the dashboard. You should save this on your end to use when rendering
-  an embedded dashboard.
-</ResponseField>
-
-<ResponseField name="name" type="string">
-  This is the name of the user group provided in the request body.
-</ResponseField>
-
-<ResponseField name="provided_id" type="string">
-  This is the user_group_id provided in the request body.
-</ResponseField>
-
-<ResponseField name="properties" type="JSON or null">
-  This is the properties object if it was provided in the request body
-</ResponseField>
-
-</Expandable>
-
-</ResponseField>
-
-<RequestExample>
-
-```bash Example Request
-curl --location --request GET 'https://api.mintlify.com/api/user' \
---header 'Content-Type: application/json' \
---header 'Authorization: Token <token>' \
---data-raw '{
-    "user_group_id": "example_1",
-    "name": "Example 1",
-    "mapping": {"40": "213", "134": "386"},
-    "properties": {"filterValue": "value"}
-}'
-```
-
-</RequestExample>
-
-<ResponseExample>
-
-```json Response
-{
-  "success": 1,
-  "new_user_group": true,
-  "user_group": {
-    "team_id": 3,
-    "token": "<user_group_token_to_auth_dashboard>",
-    "name": "Example 1",
-    "provided_id": "example_1"
-  }
-}
-```
-
-</ResponseExample>
+openapi: 3.0.1
+info:
+  title: WSO2 Identity Server Rest API - Authentication
+  description: |
+    This document specifies a RESTful API for WSO2 Identity Server.
+  contact:
+    name: WSO2
+    url: http://wso2.com/products/identity-server/
+    email: architecture@wso2.org
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: "1.2"
+servers:
+- url: https://{serverUrl}/api/identity/auth/v1.1
+  variables:
+    serverUrl:
+      default: localhost:9443
+paths:
+  /authenticate:
+    post:
+      tags:
+      - Authentication
+      summary: Authenticate User
+      security:
+        - BasicAuth: []
+      description: This API is used to authenticate the user and to get a JWT that can be used to identify the user authenticated. 
+      requestBody:
+        description: Username and password in request body. **Not required if you have authorized to the API using basic auth.**
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthenticationRequest'
+        required: false
+      responses:
+        202:
+          description: Authentication accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthenticationSuccessResponse'
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /context/{sessionKey}:
+    get:
+      tags:
+      - Authentication
+      summary: |
+        Retrieve a authentication context parameter.
+      description: |
+        This API is used to retrieve parameters set by authentication framework to be accessed by authentication
+        endpoint. Parameters should be set by calling AuthenticationContext.addEndpointParam() to be eligible to
+        query with this API. This can be used to retieve sensitive parameters required for the authentication endpoint.
+      security:
+        - BasicAuth: []
+      operationId: getContextParameters
+      parameters:
+      - name: sessionKey
+        in: path
+        description: This represents the session data key that will uniquely identify
+          the authentication context
+        required: true
+        schema:
+          type: string
+      - name: parameters
+        in: query
+        description: Comma separated list of parameters to filter. If none provided
+          all available parameters will be sent.
+        schema:
+          type: string
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Parameters'
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      
+  /data/{keyType}/{correlationKey}:
+    get:
+      tags:
+      - Authentication
+      summary: |
+        Retrieve sensitive parameters used at authentication flow
+      description: |
+        <b>Before using this API, see instructions above on how to configure this API in IS.</b><br />
+        This API is used to retrieve sensitive parameters that can't be sent as query parameters during the authentication flow.
+        This call may not be idempotent if IS is configured to clear the data on retrieval to prevent multiple retrievals. 
+        
+      operationId: getSensitiveParameters
+      security:
+        - BasicAuth: []
+      parameters:
+      - name: keyType
+        in: path
+        description: |
+          The corelation key type. Either **AuthRequestKey** or **OauthConsentKey**. <br/> **AuthRequestKey** can be
+          used to query parameters set by authentication framework and relates to sessionDataKey. </br> **OauthConsentKey**
+          can be used to query parameters set by oauth consent flow and relates to sessionDataKeyConsent.
+        required: true
+        schema:
+          type: string
+      - name: correlationKey
+        in: path
+        description: The correlation key. Either the value of **sessionDataKey** or **sessionDataKeyConsent** corresponding to the keyType above.
+        required: true
+        schema:
+          type: string
+      - name: parameters
+        in: query
+        description: Comma separated list of parameters to filter. If none provided
+          all available parameters will be returned.
+        schema:
+          type: string
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Parameters'
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    AuthenticationRequest:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+    AuthenticationSuccessResponse:
+      type: object
+      properties:
+        token:
+          type: string
+    Parameters:
+      type: object
+      additionalProperties:
+        type: object
+        properties: {}
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        description:
+          type: string
+        properties:
+          type: object
+          additionalProperties:
+            type: string
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
