@@ -55,10 +55,5 @@
     "github": "https://github.com/mintlify",
     "linkedin": "https://www.linkedin.com/company/mintsearch"
   },
-  "backgroundImage": "/background.png",
-  "api": {
-    "auth": {
-        "method": "bearer"
-    }
-}
+  "backgroundImage": "/background.png"
 }
