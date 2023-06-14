@@ -223,6 +223,9 @@ components:
           additionalProperties:
             type: string
   securitySchemes:
-    BasicAuth:
-      type: http
-      scheme: basic
+    oAuth2Password:
+      type: oauth2
+      description: See https://developers.getbase.com/docs/rest/articles/oauth2/requests
+      flows: 
+        password: 
+          tokenUrl: https://localhost:9443/oauth2/token
