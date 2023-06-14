@@ -56,11 +56,5 @@
     "linkedin": "https://www.linkedin.com/company/mintsearch"
   },
   "backgroundImage": "/background.png",
-"api": {
-    "auth": {
-        "method": "basic",
-        "name": "username:password"
-    }
-},
 "openapi": "/api-reference/authentication.yaml"
 }
