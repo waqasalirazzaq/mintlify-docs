@@ -23,7 +23,7 @@ paths:
       - Authentication
       summary: Authenticate User
       security:
-        - BasicAuth: []
+        - oAuth2Password: []
       description: This API is used to authenticate the user and to get a JWT that can be used to identify the user authenticated. 
       requestBody:
         description: Username and password in request body. **Not required if you have authorized to the API using basic auth.**
@@ -75,7 +75,7 @@ paths:
         endpoint. Parameters should be set by calling AuthenticationContext.addEndpointParam() to be eligible to
         query with this API. This can be used to retieve sensitive parameters required for the authentication endpoint.
       security:
-        - BasicAuth: []
+        - oAuth2Password: []
       operationId: getContextParameters
       parameters:
       - name: sessionKey
@@ -136,7 +136,7 @@ paths:
         
       operationId: getSensitiveParameters
       security:
-        - BasicAuth: []
+        - oAuth2Password: []
       parameters:
       - name: keyType
         in: path
@@ -228,4 +228,5 @@ components:
       description: See https://developers.getbase.com/docs/rest/articles/oauth2/requests
       flows: 
         password: 
+          scopes: {}
           tokenUrl: https://localhost:9443/oauth2/token
