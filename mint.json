@@ -56,5 +56,5 @@
     "linkedin": "https://www.linkedin.com/company/mintsearch"
   },
   "backgroundImage": "/background.png",
-"openapi": "/api-reference/authentication.yaml"
+"openapi": "/api-reference/Oauth2Token.yaml"
 }
